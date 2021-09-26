@@ -80,6 +80,9 @@ namespace events
 				}
 			}
 
+			template<typename Ret, typename ...Args>
+			friend MulticastDelegate<Ret, Args...> operator+(const MulticastDelegate<Ret, Args...>& ld, const Delegate<Ret, Args...>& rd);
+
 		protected:
 			bool equals(const AbstractDelegate<Ret, Args...>& other) const override {
 				const Type* _other = dynamic_cast<const Type*>(&other);
@@ -97,6 +100,17 @@ namespace events
 		MulticastDelegate<Ret, Args...> operator+(const Delegate<Ret, Args...>& ld, const Delegate<Ret, Args...>& rd) {
 			MulticastDelegate<Ret, Args...> res;
 			res += ld;
+			res += rd;
+			return res;
+		}
+
+		template<typename Ret, typename ...Args>
+		MulticastDelegate<Ret, Args...> operator+(const MulticastDelegate<Ret, Args...>& md, const Delegate<Ret, Args...>& rd) {
+			MulticastDelegate<Ret, Args...> res;
+			std::lock_guard<std::mutex> g(md.core.handlers);
+			for (auto& handler : md.core.handlers) {
+				res += handler;
+			}
 			res += rd;
 			return res;
 		}
