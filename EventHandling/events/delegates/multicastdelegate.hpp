@@ -35,7 +35,7 @@ namespace events
 		
 		public:
 			MulticastDelegate(): core() {}
-			MulticastDelegate(const MulticastDelegate& other) = delete;
+			MulticastDelegate(const MulticastDelegate& other): core(other.core) {}
 			MulticastDelegate(const MulticastDelegate&& other) = delete;
 
 			Ret invoke(Args... args) override {
