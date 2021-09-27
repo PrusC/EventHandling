@@ -52,6 +52,17 @@ namespace events
 
 			Delegate(Delegate&& other): _holder(std::move(other._holder)) {}
 
+			template <typename Object>
+			Delegate(Object* object, holders::MethodPtr<Object, Ret, Args...> method): 
+				_holder(std::make_shared<holders::MethodHolder<Object, Ret, Args...>>(object, method)) {}
+
+			template <typename Object>
+			Delegate(Object* object, holders::ConstMethodPtr<Object, Ret, Args...> method) :
+				_holder(std::make_shared<holders::MethodHolder<Object, Ret, Args...>>(object, method)) {}
+
+			Delegate(holders::FunctionPtr<Ret, Args...> function): 
+				_holder(std::make_shared<holders::FunctionHolder<Ret, Args...>>(function)) {}
+
 			Ret invoke(Args...args) override {
 				if (_holder) {
 					return _holder->invoke(std::forward<Args>(args)...);
@@ -131,31 +142,39 @@ namespace events
 		using MethodPtr = holders::MethodPtr<Obj, Ret, Args...>;
 
 
+		template<typename Obj, typename Ret, typename ...Args>
+		using ConstMethodPtr = holders::ConstMethodPtr<Obj, Ret, Args...>;
+
+
 		template<typename Ret, typename ...Args>
 		using FunctionPtr = holders::FunctionPtr<Ret, Args...>;
 
 
+
 		template<typename Obj, typename Ret, typename ...Args>
 		Delegate<Ret, Args...> delegate(Obj* obj, MethodPtr<Obj, Ret, Args...> method) {
-			return MethodDelegate<Obj, Ret, Args...>(obj, method);
+			return Delegate<Ret, Args...>(obj, method);
+		}
+
+		template<typename Obj, typename Ret, typename ...Args>
+		Delegate<Ret, Args...> delegate(Obj* obj, ConstMethodPtr<Obj, Ret, Args...> method) {
+			return Delegate<Obj, Ret, Args...>(obj, method);
 		}
 
 
 		template<typename Ret, typename ...Args>
 		Delegate<Ret, Args...> delegate(FunctionPtr<Ret, Args...> function) {
-			return FunctionDelegate<Ret, Args...>(function);
+			return Delegate<Ret, Args...>(function);
 		}
-
 
 		template<typename Obj, typename Ret, typename ...Args>
 		std::shared_ptr<Delegate<Ret, Args...>> delegate1(Obj* obj, MethodPtr<Obj, Ret, Args...> method) {
-			return std::make_shared<MethodDelegate<Obj, Ret, Args...>>(obj, method);
+			return std::make_shared<Delegate<Ret, Args...>>(obj, method);
 		}
-
 
 		template<typename Ret, typename ...Args>
 		std::shared_ptr<Delegate<Ret, Args...>> delegate1(FunctionPtr<Ret, Args...> function) {
-			return std::make_shared<FunctionDelegate<Ret, Args...>>(function);
+			return std::make_shared<Delegate<Ret, Args...>>(function);
 		}
 
 	}

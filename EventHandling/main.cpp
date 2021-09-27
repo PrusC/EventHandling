@@ -1,4 +1,5 @@
 #include <iostream>
+#include <functional>
 #include "events/eventhandling.h"
 
 using namespace std;
@@ -58,6 +59,9 @@ void test_delegates(){
 	SomeClass a;
 	Delegate<int, int> md = delegate<SomeClass, int, int>(&a, &SomeClass::change_func);
 	cout << "MD: " << md(4) << "   " << md(3) << endl;
+	Delegate<int, int> ddd(&a, &SomeClass::change_func);
+	Delegate<int, int> dddd(func2);
+	cout << "ddd= " << ddd(444) << endl;
 
 	MulticastDelegate<int, int> multi;
 	multi += md;

@@ -110,46 +110,56 @@ namespace events
 
 		};
 
-		//template<typename Callable, typename Ret, typename ...Args>
-		//class FuncObjectHolder : public Holder<Ret, Args...> {
+		/*template<typename Callable, typename Ret, typename ...Args>
+		class CallableHolder : public Holder<Ret, Args...> {
 
-		//public:
-		//	using Type = MethodHolder<FunObject, Ret, Args...>;
+		public:
+			using Type = CallableHolder<Callable, Ret, Args...>;
 
-		//	FuncObjectHolder(FunObject & f){
-		//		if (std::is_invocable_r_v<Ret, decltype(Callable), Args...>) {
-		//			throw std::invalid_argument("Wrong callable object");
-		//		}
-		//		obj = f;
-		//		fn = [](Args...args) {
-		//			return std::invoke(obj, args...);
-		//		}
-		//	}
-		//	FuncObjectHolder(FunObject && f){
-		//		if (std::is_invocable_r_v<Ret, decltype(Callable), Args...>) {
-		//			throw std::invalid_argument("Wrong callable object");
-		//		}
-		//		obj = std::move(f);
-		//		fn = [](Args...args) {
-		//			return std::invoke(obj, args...);
-		//		}
-		//	}
+			CallableHolder(Callable& f){
+				if (!std::is_invocable_r_v<Ret, decltype(Callable), Args...>) {
+					throw std::invalid_argument("Wrong callable object");
+				}
+				obj = &f;
+				fn = [](Args...args) -> Ret {
+					return std::invoke(obj, args...);
+				};
+				isOwner = false;
+			}
+			CallableHolder(Callable&& f){
+				if (std::is_invocable_r_v<Ret, decltype(Callable), Args...> &&
+					std::is_class_v<Callable>) {
+					throw std::invalid_argument("Wrong callable object");
+				}
+				obj = new Callable(std::move(f));
+				fn = [](Args...args) -> Ret {
+					return std::invoke(obj, args...);
+				};
+				isOwner = true;
+			}
 
-		//	Ret invoke(Args... args) override {
-		//		return fn(std::forward<Args>(args)...);
-		//	}
+			~CallableHolder() {
+				if (isOwner) {
+					delete obj;
+				}
+			}
 
-		//protected:
-		//	bool equals(const Holder<Ret, Args...>& other) const override {
-		//		const Type* _other = dynamic_cast<const Type*>(&other);
-		//		return _other != nullptr && _object == _other->_object && _method == _other->_method;
-		//	}
+			Ret invoke(Args... args) override {
+				return fn(std::forward<Args>(args)...);
+			}
 
-		//private:
-		//	FunObject obj;
-		//	FunctionPtr fn;
+		protected:
+			bool equals(const Holder<Ret, Args...>& other) const override {
+				const Type* _other = dynamic_cast<const Type*>(&other);
+				return _other != nullptr && obj == _other->obj && fn == _other->fn;
+			}
 
-		//};
+		private:
+			Callable obj;
+			bool isOwner;
+			FunctionPtr<Ret, Args...> fn;
+
+		};*/
 
 	}
 }
