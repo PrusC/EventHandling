@@ -53,27 +53,21 @@ void test_holders() {
 void test_delegates(){
 	using namespace events::delegates;
 
-	Delegate<int> d = FunctionDelegate<int>(func);
-	cout << "FD: " << d() << endl;
+	Delegate<int> d(func);
+	cout << "FunctionDelegate: " << d() << endl;
 	
 	SomeClass a;
 	Delegate<int, int> md = delegate<SomeClass, int, int>(&a, &SomeClass::change_func);
-	cout << "MD: " << md(4) << "   " << md(3) << endl;
-	Delegate<int, int> ddd(&a, &SomeClass::change_func);
-	Delegate<int, int> dddd(func2);
-	cout << "ddd= " << ddd(444) << endl;
+	cout << "MethodDelegate: " << md(4) << "   " << md(3) << endl;
+	Delegate<int, int> md2(&a, &SomeClass::change_func);
+	cout << "MethodDelegate2: " << md2(444) << endl;
 
 	MulticastDelegate<int, int> multi;
 	multi += md;
 	multi += delegate<int, int>(func2);
-	cout << "DADAD " << multi(3) << endl;
+	cout << "MulticastDelegate: " << multi(3) << endl;
 	multi -= md;
-	cout << "DADAD " << multi(3) << endl;
-
-}
-
-void test_event_handlers() {
-	using namespace events;
+	cout << "MulticastDelegate: " << multi(3) << endl;
 
 }
 
