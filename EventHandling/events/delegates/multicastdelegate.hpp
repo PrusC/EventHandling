@@ -8,6 +8,7 @@ namespace events
 {
 	namespace delegates
 	{
+
 		namespace
 		{
 			template<typename Ret, typename ...Args>
@@ -114,7 +115,6 @@ namespace events
 			res += rd;
 			return res;
 		}
-
 
 	}
 }

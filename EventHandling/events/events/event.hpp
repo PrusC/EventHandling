@@ -14,7 +14,7 @@ namespace events
 			addHandler(handler);
 		}
 
-		void operator-= (const EventHandler<Args...>&& handler) {
+		void operator-= (const EventHandler<Args...>& handler) {
 			removeHandler(handler);
 		}
 

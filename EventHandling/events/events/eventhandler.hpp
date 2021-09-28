@@ -17,12 +17,12 @@ namespace events
 
 	template<typename ...Args>
 	EventHandler<Args... > handler(delegates::FunctionPtr<void, Args...> function) {
-		return EventFunctionHandler<Args...>(function);
+		return EventHandler<Args...>(function);
 	}
 
 	template<typename Object, typename ...Args>
 	EventHandler<Args... > handler(Object* obj, delegates::MethodPtr<Object, void, Args...> method) {
-		return EventMethodHandler<Args...>(obj, method);
+		return EventHandler<Args...>(obj, method);
 	}
 
 }
