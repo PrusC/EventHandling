@@ -388,5 +388,5 @@ FodyWeavers.xsd
 *.sln.iml
 
 tests/
-holder2.hpp
 out/
+CMakeSettings.json
