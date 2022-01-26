@@ -20,10 +20,7 @@ jobs:
 
     steps:
     - name: Install gtest
-      run: apt-get install -y cmake libboost-dev libgtest-dev && \
-           cmake -B "/usr/src/gtest" -S "/usr/src/gtest" && \
-           make -C /usr/src/gtest && \
-           cp /usr/src/gtest/*.a /usr/lib
+      run: sudo apt-get install libgtest-dev && cd /usr/src/gtest && sudo cmake CMakeLists.txt && sudo make && sudo cp *.a /usr/lib && sudo ln -s /usr/lib/libgtest.a /usr/local/lib/libgtest.a && sudo ln -s /usr/lib/libgtest_main.a /usr/local/lib/libgtest_main.a
     - uses: actions/checkout@v2
 
     - name: Configure CMake
