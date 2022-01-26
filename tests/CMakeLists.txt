@@ -1,6 +1,6 @@
 
-cmake_minimum_required(VERSION 3.20)
-project(Test VERSION 0.1.0 LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.16)
+project(Tests VERSION 0.1.0 LANGUAGES CXX)
 
 #set(INCLUDED_PARENT_PATH "../")
 #add_library(EventHandling INTERFACE "../")
