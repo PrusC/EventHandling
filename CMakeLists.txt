@@ -19,4 +19,6 @@ add_library(EventHandling INTERFACE ${header_files})
 
 if(BUILD_UNIT_TESTS)
   add_subdirectory(tests)
+	enable_testing()
+	include(GoogleTest)
 endif()
