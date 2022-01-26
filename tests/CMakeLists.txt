@@ -15,5 +15,6 @@ set_target_properties(tests PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_link_libraries(tests PUBLIC
   ${GTEST_LIBRARY}
   ${GTEST_MAIN_LIBRARY}
+  ${CMAKE_THREAD_LIBS_INIT}
   INTERFACE EventHandling 
 )
