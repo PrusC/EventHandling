@@ -20,8 +20,7 @@ jobs:
 
     steps:
     - name: Install gtest
-      run: apt-get update && \
-           apt-get install -y cmake libboost-dev libgtest-dev && \
+      run: apt-get install -y cmake libboost-dev libgtest-dev && \
            cmake -B "/usr/src/gtest" -S "/usr/src/gtest" && \
            make -C /usr/src/gtest && \
            cp /usr/src/gtest/*.a /usr/lib
