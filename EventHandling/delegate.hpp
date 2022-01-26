@@ -11,9 +11,9 @@ namespace events
   {
 
     class DelegateException: public std::exception {
-    //public:
-    //  DelegateException(): std::exception() {}
-    //  DelegateException(char const* const message): std::exception(message) {}
+    public:
+      DelegateException(): std::exception() {}
+      DelegateException(char const* const message): std::exception(message) {}
     };
 
     template<typename Ret, typename ...Args>

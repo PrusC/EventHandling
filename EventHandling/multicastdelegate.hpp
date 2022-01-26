@@ -81,7 +81,7 @@ namespace events
         }
       }
 
-      template<typename Ret, typename ...Args>
+      //template<typename Ret, typename ...Args>
       friend MulticastDelegate<Ret, Args...> operator+(const MulticastDelegate<Ret, Args...>& ld, const Delegate<Ret, Args...>& rd);
 
     protected:
