@@ -20,7 +20,7 @@ jobs:
 
     steps:
     - name: Install gtest
-      run: sudo apt-get install libgtest-dev
+      #run: sudo apt-get install libgtest-dev
     - uses: actions/checkout@v2
 
     - name: Configure CMake
