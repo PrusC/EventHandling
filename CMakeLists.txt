@@ -5,10 +5,19 @@ project(EventHandling VERSION 0.1.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED YES)
 
-add_subdirectory(EventHandling)
-include_directories(EventHandling)
+set(HEADER_DIR EventHandling)
 
-add_executable("main" main.cpp)
+set (header_files
+	${HEADER_DIR}/delegate.hpp
+	${HEADER_DIR}/multicastdelegate.hpp
+	${HEADER_DIR}/eventhandler.hpp
+	${HEADER_DIR}/event.hpp
+	${HEADER_DIR}/delegate.hpp
+)
 
-target_include_directories(EventHandling INTERFACE)
-target_link_libraries("main" INTERFACE EventHandling)
+add_library(EventHandling INTERFACE ${header_files})
+
+
+if(BUILD_UNIT_TESTS)
+  add_subdirectory(tests)
+endif()

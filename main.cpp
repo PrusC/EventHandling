@@ -47,8 +47,8 @@ void test_holders() {
 	cout << "Method Holder: " << mh1.invoke(5) << endl;
 	cout << "Method Holder: " << mh2.invoke(5) << endl;
 	cout << "Method Holder: "; mh3(313);
-}
 
+}
 
 void test_delegates() {
 	using namespace events::delegates;
