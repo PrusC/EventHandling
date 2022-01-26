@@ -1,7 +1,7 @@
 #pragma once
 
 #include "eventhandler.hpp"
-#include "../delegates/multicastdelegate.hpp"
+#include "multicastdelegate.hpp"
 
 namespace events
 {

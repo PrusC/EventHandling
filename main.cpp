@@ -1,6 +1,6 @@
 #include <iostream>
 #include <functional>
-#include "events/eventhandling.h"
+#include "EventHandling/eventhandling.h"
 
 using namespace std;
 
@@ -50,12 +50,12 @@ void test_holders() {
 }
 
 
-void test_delegates(){
+void test_delegates() {
 	using namespace events::delegates;
 
 	Delegate<int> d(func);
 	cout << "FunctionDelegate: " << d() << endl;
-	
+
 	SomeClass a;
 	Delegate<int, int> md = delegate<SomeClass, int, int>(&a, &SomeClass::change_func);
 	cout << "MethodDelegate: " << md(4) << "   " << md(3) << endl;

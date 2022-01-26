@@ -3,7 +3,7 @@
 #include <memory>
 #include <exception>
 
-#include "../holders/holder.hpp"
+#include "utils/holder.hpp"
 
 namespace events
 {
@@ -53,14 +53,14 @@ namespace events
 			Delegate(Delegate&& other): _holder(std::move(other._holder)) {}
 
 			template <typename Object>
-			Delegate(Object* object, holders::MethodPtr<Object, Ret, Args...> method): 
+			Delegate(Object* object, ptr::MethodPtr<Object, Ret, Args...> method): 
 				_holder(std::make_shared<holders::MethodHolder<Object, Ret, Args...>>(object, method)) {}
 
 			template <typename Object>
-			Delegate(Object* object, holders::ConstMethodPtr<Object, Ret, Args...> method) :
+			Delegate(Object* object, ptr::ConstMethodPtr<Object, Ret, Args...> method) :
 				_holder(std::make_shared<holders::MethodHolder<Object, Ret, Args...>>(object, method)) {}
 
-			Delegate(holders::FunctionPtr<Ret, Args...> function): 
+			Delegate(ptr::FunctionPtr<Ret, Args...> function):
 				_holder(std::make_shared<holders::FunctionHolder<Ret, Args...>>(function)) {}
 
 			Ret invoke(Args...args) override {
@@ -95,7 +95,7 @@ namespace events
 			using Holder = holders::FunctionHolder<Ret, Args...>;
 
 		public:
-			using Function = holders::FunctionPtr<Ret, Args...>;
+			using Function = ptr::FunctionPtr<Ret, Args...>;
 
 			FunctionDelegate() = default;
 
@@ -116,8 +116,8 @@ namespace events
 			using Holder = holders::MethodHolder<Object, Ret, Args...>;
 
 		public:
-			using Method = holders::MethodPtr<Object, Ret, Args...>;
-			using MethodConst = holders::ConstMethodPtr<Object, Ret, Args...>;
+			using Method = ptr::MethodPtr<Object, Ret, Args...>;
+			using MethodConst = ptr::ConstMethodPtr<Object, Ret, Args...>;
 			using ObjectPtr = Object*;
 
 			MethodDelegate() = default;
@@ -139,15 +139,15 @@ namespace events
 
 
 		template<typename Obj, typename Ret, typename ...Args>
-		using MethodPtr = holders::MethodPtr<Obj, Ret, Args...>;
+		using MethodPtr = ptr::MethodPtr<Obj, Ret, Args...>;
 
 
 		template<typename Obj, typename Ret, typename ...Args>
-		using ConstMethodPtr = holders::ConstMethodPtr<Obj, Ret, Args...>;
+		using ConstMethodPtr = ptr::ConstMethodPtr<Obj, Ret, Args...>;
 
 
 		template<typename Ret, typename ...Args>
-		using FunctionPtr = holders::FunctionPtr<Ret, Args...>;
+		using FunctionPtr = ptr::FunctionPtr<Ret, Args...>;
 
 
 

@@ -389,3 +389,4 @@ FodyWeavers.xsd
 
 tests/
 holder2.hpp
+out/

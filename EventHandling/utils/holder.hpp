@@ -4,9 +4,9 @@
 
 namespace events
 {
-	namespace holders
-	{
 
+	namespace ptr
+	{
 		template<typename Ret, typename ...Args>
 		using FunctionPtr = Ret(*)(Args...);
 
@@ -16,12 +16,15 @@ namespace events
 		template<typename Object, typename Ret, typename ...Args>
 		using ConstMethodPtr = Ret(Object::*)(Args...) const;
 
-		//template<typename Object, typename Ret, typename ...Args>
-		//using NoExceptMethodPtr = MethodPtr<Object, Ret, Args...> noexcept;
+		template<typename Object, typename Ret, typename ...Args>
+		using NoExceptMethodPtr = Ret(Object::*)(Args...) noexcept;
 
-		//template<typename Object, typename Ret, typename ...Args>
-		//using ConstNoExceptMethodPtr = MethodPtr<Object, Ret, Args...> const noexcept;
+		template<typename Object, typename Ret, typename ...Args>
+		using ConstNoExceptMethodPtr = Ret(Object::*)(Args...) const noexcept;
+	}
 
+	namespace holders
+	{
 		template<typename Ret, typename ...Args>
 		class Holder {
 
@@ -53,10 +56,10 @@ namespace events
 		class FunctionHolder : public Holder<Ret, Args...> {
 
 		public:;
-			using Function = FunctionPtr<Ret, Args...>;
+			using Function = ptr::FunctionPtr<Ret, Args...>;
 			using Type = FunctionHolder<Ret, Args...>;
 
-			FunctionHolder(Function func) : _func(func) {}
+			FunctionHolder(ptr::FunctionPtr<Ret, Args...> func) : _func(func) {}
 			FunctionHolder(const FunctionHolder& other): _func(other._func) {}
 
 			Ret invoke(Args... args) override {
@@ -70,7 +73,7 @@ namespace events
 			}
 
 		private:
-			Function _func;
+			ptr::FunctionPtr<Ret, Args...> _func;
 		};
 
 
@@ -78,8 +81,8 @@ namespace events
 		class MethodHolder : public Holder<Ret, Args...> {
 
 		public:
-			using Method = MethodPtr<Object, Ret, Args...>;
-			using MethodConst = ConstMethodPtr<Object, Ret, Args...>;
+			using Method = ptr::MethodPtr<Object, Ret, Args...>;
+			using MethodConst = ptr::ConstMethodPtr<Object, Ret, Args...>;
 			using Type = MethodHolder<Object, Ret, Args...>;
 
 			MethodHolder(Object* object, Method method) : _object(object), _method(method) {}
@@ -105,7 +108,9 @@ namespace events
 		private:
 
 			Object* _object;
-			std::variant<Method, MethodConst> _method;
+			std::variant<
+				ptr::MethodPtr<Object, Ret, Args...>,
+				ptr::ConstMethodPtr<Object, Ret, Args...>> _method;
 			//Method _method;
 
 		};

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../delegates/delegate.hpp"
-#include "../delegates/multicastdelegate.hpp"
+#include "delegate.hpp"
+#include "multicastdelegate.hpp"
 
 namespace events
 {
