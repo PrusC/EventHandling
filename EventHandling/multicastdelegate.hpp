@@ -81,9 +81,6 @@ namespace events
         }
       }
 
-      //template<typename Ret, typename ...Args>
-      friend MulticastDelegate<Ret, Args...> operator+(const MulticastDelegate<Ret, Args...>& ld, const Delegate<Ret, Args...>& rd);
-
     protected:
       bool equals(const AbstractDelegate<Ret, Args...>& other) const override {
         const Type* _other = dynamic_cast<const Type*>(&other);
