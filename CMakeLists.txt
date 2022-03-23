@@ -17,6 +17,11 @@ set (header_files
 
 add_library(EventHandling INTERFACE ${header_files})
 
+if(BUILD_MAIN_EXECUTABLE)
+	add_executable(main main.cpp)
+	target_link_libraries(main INTERFACE EventHandling)
+endif()
+
 if(BUILD_UNIT_TESTS)
   add_subdirectory(tests)
 	enable_testing()

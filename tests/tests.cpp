@@ -39,17 +39,18 @@ TEST(Tests, Test_holders) {
   using namespace events::holders;
 
   SomeClass a;
-  MethodHolder<SomeClass, int> mh1(&a, &SomeClass::ConstFunct);
-  MethodHolder<SomeClass, int, int> mh2(&a, &SomeClass::ChangeFunct);
-  FunctionHolder<std::string, int>  mh3(&SomeClass::StaticFunc);
-  FunctionHolder<int> fh(SimpleFunction);
-  FunctionHolder<std::string, int> fh2(FunctionWithInput);
-
-  ASSERT_EQ(mh1.invoke(), a.ConstFunct());
-  ASSERT_EQ(mh2.invoke(5), a.ChangeFunct(5) + 5);
-  ASSERT_EQ(mh3.invoke(5), SomeClass::StaticFunc(5));
-  ASSERT_EQ(fh.invoke(), SimpleFunction());
-  ASSERT_FALSE(mh3 == fh2);
+  auto mh1 = Factory<int>::create(&a, &SomeClass::ConstFunct);
+  auto mh2 = Factory<int, int>::create(&a, &SomeClass::ChangeFunct);
+  auto mh3 = Factory<std::string, int>::create(&SomeClass::StaticFunc);
+  auto fh = Factory<int>::create(&SimpleFunction);
+  auto fh2 = Factory<std::string, int>::create(&FunctionWithInput);
+  auto l = Factory<int>::create([]() {return 2; });
+  ASSERT_EQ(mh1->invoke(), a.ConstFunct());
+  ASSERT_EQ(mh2->invoke(5), a.ChangeFunct(5) + 5);
+  ASSERT_EQ(l->invoke(), 2);
+  ASSERT_EQ(mh3->invoke(5), SomeClass::StaticFunc(5));
+  ASSERT_EQ(fh->invoke(), SimpleFunction());
+  ASSERT_FALSE(*fh2 == *mh3);
 }
 
 TEST(Tests, Test_delegates) {

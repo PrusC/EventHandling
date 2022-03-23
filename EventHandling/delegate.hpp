@@ -5,14 +5,13 @@
 
 #include "utils/holder.hpp"
 
-namespace events
-{
-  namespace delegates
-  {
+namespace events {
+
+  namespace delegates {
 
     class DelegateException: public std::exception {
     public:
-      explicit DelegateException(): std::exception() {}
+      //explicit DelegateException(): std::exception(), msg("") {}
       explicit DelegateException(char const* message): msg(message) {}
       const char* what() const noexcept override { return msg; }
     private:
@@ -20,10 +19,10 @@ namespace events
     };
 
     template<typename Ret, typename ...Args>
-    class AbstractDelegate {
+    class IDelegate {
 
     public:
-      virtual ~AbstractDelegate() {}
+      virtual ~IDelegate() {}
       virtual Ret invoke(Args... args) = 0;
       virtual explicit operator bool() const = 0;
 
@@ -31,62 +30,55 @@ namespace events
         return invoke(std::forward<Args>(args)...);
       }
 
-      bool operator==(const AbstractDelegate& other) const {
+      bool operator==(const IDelegate& other) const {
         return equals(other);
       }
 
-      bool operator!=(const AbstractDelegate& other) const {
+      bool operator!=(const IDelegate& other) const {
         return !(*this == other);
       }
 
     protected:
-      virtual bool equals(const AbstractDelegate<Ret, Args...>& other) const = 0;
+      virtual bool equals(const IDelegate<Ret, Args...>& other) const = 0;
 
     };
 
     template<typename Ret, typename ...Args>
-    class Delegate: public AbstractDelegate<Ret, Args...> {
+    class Delegate: public IDelegate<Ret, Args...> {
 
     public:
 
-      Delegate(): _holder(nullptr) {}
+      Delegate(): m_Holder(nullptr) {}
 
-      Delegate(const Delegate& other): _holder(other._holder) {}
+      Delegate(const Delegate& other): m_Holder(other.m_Holder) {}
 
-      Delegate(Delegate&& other): _holder(std::move(other._holder)) {}
+      Delegate(Delegate&& other): m_Holder(std::move(other.m_Holder)) {}
 
-      template <typename Object>
-      Delegate(Object* object, ptr::MethodPtr<Object, Ret, Args...> method) :
-        _holder(std::make_shared<holders::MethodHolder<Object, Ret, Args...>>(object, method)) {}
-
-      template <typename Object>
-      Delegate(Object* object, ptr::ConstMethodPtr<Object, Ret, Args...> method) :
-        _holder(std::make_shared<holders::MethodHolder<Object, Ret, Args...>>(object, method)) {}
+      template <typename Object, typename Method>
+      Delegate(Object* object, Method method) :
+        m_Holder(holders::Factory<Ret, Args...>::create(object, method)) {}
 
       Delegate(ptr::FunctionPtr<Ret, Args...> function):
-        _holder(std::make_shared<holders::FunctionHolder<Ret, Args...>>(function)) {}
+        m_Holder(holders::Factory<Ret, Args...>::create(function)) {}
 
       Ret invoke(Args...args) override {
-        if (_holder) {
-          return _holder->invoke(std::forward<Args>(args)...);
+        if (m_Holder) {
+          return m_Holder->invoke(std::forward<Args>(args)...);
         }
-        throw DelegateException("Delegate does not hold the function");
+        throw DelegateException("Delegate holds nothing");
       }
 
       explicit operator bool() const override {
-        return bool(_holder);
+        return bool(m_Holder);
       }
 
     protected:
-      bool equals(const AbstractDelegate<Ret, Args...>& other) const override {
+      bool equals(const IDelegate<Ret, Args...>& other) const override {
         const Delegate<Ret, Args...>* _other = dynamic_cast<const Delegate<Ret, Args...>*>(&other);
-        return _other && _holder && *_holder.get() == *(_other->_holder).get();
+        return _other && m_Holder && *m_Holder.get() == *(_other->m_Holder).get();
       }
 
-      explicit Delegate(std::shared_ptr<holders::Holder<Ret, Args...>>&& holder):
-        _holder(std::move(holder)) {}
-
-      std::shared_ptr<holders::Holder<Ret, Args...>> _holder;
+      std::shared_ptr<holders::Holder<Ret, Args...>> m_Holder;
     };
 
 

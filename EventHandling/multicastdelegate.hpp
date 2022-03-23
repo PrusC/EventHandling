@@ -4,17 +4,16 @@
 #include <list>
 #include <mutex>
 
-namespace events
-{
-  namespace delegates
-  {
+namespace events {
 
-    namespace
-    {
+  namespace delegates {
+
+    namespace {
+
       template<typename Ret, typename ...Args>
       struct MulticastDelegateCore {
 
-        using DelegateSharedPtr = std::shared_ptr<Delegate<Ret, Args...>>;
+        using DelegateSharedPtr = std::shared_ptr<IDelegate<Ret, Args...>>;
 
         std::list<DelegateSharedPtr> handlers;
         mutable std::mutex coreMutex;
@@ -32,7 +31,7 @@ namespace events
     }
 
     template<typename Ret, typename ...Args>
-    class MulticastDelegate: public AbstractDelegate<Ret, Args...> {
+    class MulticastDelegate: public IDelegate<Ret, Args...> {
 
     public:
       MulticastDelegate(): core() {}
@@ -82,7 +81,7 @@ namespace events
       }
 
     protected:
-      bool equals(const AbstractDelegate<Ret, Args...>& other) const override {
+      bool equals(const IDelegate<Ret, Args...>& other) const override {
         const Type* _other = dynamic_cast<const Type*>(&other);
         return _other && core.handlers == _other->core.handlers;
       }
