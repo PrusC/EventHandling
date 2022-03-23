@@ -3,8 +3,7 @@
 #include "eventhandler.hpp"
 #include "multicastdelegate.hpp"
 
-namespace events
-{
+namespace events {
 
   template<typename ...Args>
   class IEvent {

@@ -1,12 +1,13 @@
 #pragma once
 
 #include <variant>
+#include <type_traits>
+#include <functional>
 
-namespace events
-{
+namespace events {
 
-  namespace ptr
-  {
+  namespace ptr {
+
     template<typename Ret, typename ...Args>
     using FunctionPtr = Ret(*)(Args...);
 
@@ -21,29 +22,19 @@ namespace events
 
     template<typename Object, typename Ret, typename ...Args>
     using ConstNoExceptMethodPtr = Ret(Object::*)(Args...) const noexcept;
+
   }
 
-  namespace holders
-  {
+  namespace holders {
+
     template<typename Ret, typename ...Args>
     class Holder {
 
     public:
-
       virtual ~Holder() {}
-
-      bool operator== (const Holder& other) const {
-        return equals(other);
-      }
-
-      bool operator!= (const Holder& other) const {
-        return !(*this == other);
-      }
-
-      Ret operator()(Args... args) {
-        return invoke(args...);
-      }
-
+      bool operator== (const Holder& other) const { return equals(other); }
+      bool operator!= (const Holder& other) const { return !(*this == other); }
+      Ret operator()(Args... args) { return invoke(args...); }
       virtual Ret invoke(Args... args) = 0;
 
     protected:
@@ -51,122 +42,111 @@ namespace events
 
     };
 
-
     template<typename Ret, typename ...Args>
-    class FunctionHolder: public Holder<Ret, Args...> {
-
-    public:;
-          using Function = ptr::FunctionPtr<Ret, Args...>;
-          using Type = FunctionHolder<Ret, Args...>;
-
-          FunctionHolder(ptr::FunctionPtr<Ret, Args...> func): _func(func) {}
-          FunctionHolder(const FunctionHolder& other): _func(other._func) {}
-
-          Ret invoke(Args... args) override {
-            return _func(std::forward<Args>(args)...);
-          }
-
-    protected:
-      bool equals(const Holder<Ret, Args...>& other) const override {
-        const Type* _other = dynamic_cast<const Type*>(&other);
-        return _other != nullptr && _func == _other->_func;
-      }
+    class Factory final {
 
     private:
-      ptr::FunctionPtr<Ret, Args...> _func;
-    };
 
+      class FunctionHolder: public Holder<Ret, Args...> {
 
-    template<typename Object, typename Ret, typename ...Args>
-    class MethodHolder: public Holder<Ret, Args...> {
+        using Type = FunctionHolder;
+
+      public:
+        explicit FunctionHolder(ptr::FunctionPtr<Ret, Args...> func): m_Func(func) {}
+        explicit FunctionHolder(const FunctionHolder& other): m_Func(other.m_Func) {}
+
+        Ret invoke(Args... args) override {
+          return m_Func(std::forward<Args>(args)...);
+        }
+
+      protected:
+        bool equals(const Holder<Ret, Args...>& other) const override {
+          const Type* _other = dynamic_cast<const Type*>(&other);
+          return _other != nullptr && m_Func == _other->m_Func;
+        }
+
+      private:
+        ptr::FunctionPtr<Ret, Args...> m_Func;
+      };
+
+      template<typename Object, typename Method>
+      using check_for_method = typename std::enable_if_t<
+                std::is_member_function_pointer_v<Method>&&
+                std::is_invocable_r_v<Ret, Method, Object&, Args...>>;
+
+      template<typename Object, typename Method, typename = check_for_method<Object, Method>>
+      class MethodHolder: public Holder<Ret, Args...> {
+
+        using Type = MethodHolder;
+
+      public:
+
+        MethodHolder(Object* object, Method method):
+            m_Object(object), m_Method(method) {}
+        MethodHolder(const MethodHolder& other): 
+            m_Object(other.m_Method), m_Method(other.m_Method) {}
+
+        Ret invoke(Args... args) override {
+          return (m_Object->*m_Method)(std::forward<Args>(args)...);
+        }
+
+      protected:
+        bool equals(const Holder<Ret, Args...>& other) const override {
+          const Type* _other = dynamic_cast<const Type*>(&other);
+          return _other != nullptr && m_Object == _other->m_Object && m_Method == _other->m_Method;
+        }
+
+      private:
+        Object* m_Object;
+        Method m_Method;
+      };
+
+      template<typename Callable, typename = std::enable_if_t<std::is_invocable_r_v<Ret, Callable, Args...>>>
+      class CallableHolder: public Holder<Ret, Args...> {
+        using Type = CallableHolder;
+      public:
+
+        CallableHolder(const Callable& callable): m_Callable(callable) {}
+        CallableHolder(Callable&& callable): m_Callable(std::move(callable)) {}
+        CallableHolder(const CallableHolder& other): m_Callable(other.m_Callable) {}
+
+        Ret invoke(Args... args) override {
+          return m_Callable(std::forward<Args>(args)...);
+        }
+
+      protected:
+        bool equals(const Holder<Ret, Args...>& other) const override {
+          const Type* _other = dynamic_cast<const Type*>(&other);
+          return _other != nullptr && m_Callable == _other->m_Callable;
+        }
+
+      private:
+        Callable m_Callable;
+      };
 
     public:
-      using Method = ptr::MethodPtr<Object, Ret, Args...>;
-      using MethodConst = ptr::ConstMethodPtr<Object, Ret, Args...>;
-      using Type = MethodHolder<Object, Ret, Args...>;
 
-      MethodHolder(Object* object, Method method): _object(object), _method(method) {}
-      MethodHolder(Object* object, MethodConst method): _object(object), _method(method) {}
-      MethodHolder(const MethodHolder& other): _object(other._object), _method(other._method) {}
-
-      Ret invoke(Args... args) override {
-        if (std::holds_alternative<Method>(_method)) {
-          return (_object->*(std::get<Method>(_method)))(std::forward<Args>(args)...);
-        }
-        else {
-          return (_object->*(std::get<MethodConst>(_method)))(std::forward<Args>(args)...);
-        }
-        //return (_object->*_method)(std::forward<Args>(args)...);
+      constexpr static std::shared_ptr<Holder<Ret, Args...>> create(ptr::FunctionPtr<Ret, Args...> func) {
+        return std::make_shared<FunctionHolder>(func);
       }
 
-    protected:
-      bool equals(const Holder<Ret, Args...>& other) const override {
-        const Type* _other = dynamic_cast<const Type*>(&other);
-        return _other != nullptr && _object == _other->_object && _method == _other->_method;
+      template <typename Object, typename Method, typename=check_for_method<Object, Method>>
+      constexpr static std::shared_ptr<Holder<Ret, Args...>> create(Object* object, Method method) {
+        return std::make_shared<MethodHolder<Object, Method>>(object, method);
       }
 
-    private:
+      template <typename Callable, typename = std::enable_if_t<std::is_invocable_r_v<Ret, Callable, Args...>>>
+      constexpr static std::shared_ptr<Holder<Ret, Args...>> create(Callable&& callable) {
+        return std::make_shared<CallableHolder<Callable>>(std::move(callable));
+      }
 
-      Object* _object;
-      std::variant<
-        ptr::MethodPtr<Object, Ret, Args...>,
-        ptr::ConstMethodPtr<Object, Ret, Args...>> _method;
-      //Method _method;
+      template <typename Callable, typename = std::enable_if_t<std::is_invocable_r_v<Ret, Callable, Args...>>>
+      constexpr static std::shared_ptr<Holder<Ret, Args...>> create(const Callable& callable) {
+        return std::make_shared<CallableHolder<Callable>>(callable);
+      }
 
     };
-
-    /*template<typename Callable, typename Ret, typename ...Args>
-    class CallableHolder : public Holder<Ret, Args...> {
-
-    public:
-      using Type = CallableHolder<Callable, Ret, Args...>;
-
-      CallableHolder(Callable& f){
-        if (!std::is_invocable_r_v<Ret, decltype(Callable), Args...>) {
-          throw std::invalid_argument("Wrong callable object");
-        }
-        obj = &f;
-        fn = [](Args...args) -> Ret {
-          return std::invoke(obj, args...);
-        };
-        isOwner = false;
-      }
-      CallableHolder(Callable&& f){
-        if (std::is_invocable_r_v<Ret, decltype(Callable), Args...> &&
-          std::is_class_v<Callable>) {
-          throw std::invalid_argument("Wrong callable object");
-        }
-        obj = new Callable(std::move(f));
-        fn = [](Args...args) -> Ret {
-          return std::invoke(obj, args...);
-        };
-        isOwner = true;
-      }
-
-      ~CallableHolder() {
-        if (isOwner) {
-          delete obj;
-        }
-      }
-
-      Ret invoke(Args... args) override {
-        return fn(std::forward<Args>(args)...);
-      }
-
-    protected:
-      bool equals(const Holder<Ret, Args...>& other) const override {
-        const Type* _other = dynamic_cast<const Type*>(&other);
-        return _other != nullptr && obj == _other->obj && fn == _other->fn;
-      }
-
-    private:
-      Callable obj;
-      bool isOwner;
-      FunctionPtr<Ret, Args...> fn;
-
-    };*/
 
   }
+
 }
-
-
