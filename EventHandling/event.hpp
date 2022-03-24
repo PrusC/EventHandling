@@ -27,23 +27,23 @@ namespace events {
   class Event: public IEvent<Args...> {
 
   public:
-    Event(): _handlers() {}
+    Event(): m_Handlers() {}
 
     void operator() (Args...args) {
-      _handlers(args...);
+      m_Handlers(args...);
     }
 
   protected:
     void addHandler(const EventHandler<Args...>& handler) override {
-      _handlers += handler;
+      m_Handlers += handler;
     }
 
     void removeHandler(const EventHandler<Args...>& handler) override {
-      _handlers -= handler;
+      m_Handlers -= handler;
     }
 
   private:
-    delegates::MulticastDelegate<void, Args...> _handlers;
+    delegates::MulticastDelegate<void, Args...> m_Handlers;
 
   };
 }
