@@ -30,7 +30,9 @@ namespace events {
     Event(): m_Handlers() {}
 
     void operator() (Args...args) {
-      m_Handlers(args...);
+      if (!bool(m_Handlers)) {
+        m_Handlers(args...);
+      }
     }
 
   protected:
