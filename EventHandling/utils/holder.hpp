@@ -34,8 +34,8 @@ namespace events {
       virtual ~Holder() {}
       bool operator== (const Holder& other) const { return equals(other); }
       bool operator!= (const Holder& other) const { return !(*this == other); }
-      Ret operator()(Args... args) { return invoke(args...); }
-      virtual Ret invoke(Args... args) = 0;
+      Ret operator()(Args&&... args) { return invoke(std::forward<Args>(args)...); }
+      virtual Ret invoke(Args&&... args) = 0;
 
     protected:
       virtual bool equals(const Holder<Ret, Args...>& other) const = 0;
@@ -55,7 +55,7 @@ namespace events {
         explicit FunctionHolder(ptr::FunctionPtr<Ret, Args...> func): m_Func(func) {}
         explicit FunctionHolder(const FunctionHolder& other): m_Func(other.m_Func) {}
 
-        Ret invoke(Args... args) override {
+        Ret invoke(Args&&... args) override {
           return m_Func(std::forward<Args>(args)...);
         }
 
@@ -86,7 +86,7 @@ namespace events {
         MethodHolder(const MethodHolder& other): 
             m_Object(other.m_Method), m_Method(other.m_Method) {}
 
-        Ret invoke(Args... args) override {
+        Ret invoke(Args&&... args) override {
           return (m_Object->*m_Method)(std::forward<Args>(args)...);
         }
 
@@ -110,7 +110,7 @@ namespace events {
         CallableHolder(Callable&& callable): m_Callable(std::move(callable)) {}
         CallableHolder(const CallableHolder& other): m_Callable(other.m_Callable) {}
 
-        Ret invoke(Args... args) override {
+        Ret invoke(Args&&... args) override {
           return m_Callable(std::forward<Args>(args)...);
         }
 

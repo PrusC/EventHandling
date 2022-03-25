@@ -23,10 +23,10 @@ namespace events {
 
     public:
       virtual ~IDelegate() {}
-      virtual Ret invoke(Args... args) = 0;
+      virtual Ret invoke(Args&&... args) = 0;
       virtual explicit operator bool() const = 0;
 
-      Ret operator()(Args... args) {
+      Ret operator()(Args&&... args) {
         return invoke(std::forward<Args>(args)...);
       }
 
@@ -61,7 +61,7 @@ namespace events {
       Delegate(ptr::FunctionPtr<Ret, Args...> function):
         m_Holder(holders::Factory<Ret, Args...>::create(function)) {}
 
-      Ret invoke(Args...args) override {
+      Ret invoke(Args&&...args) override {
         if (m_Holder) {
           return m_Holder->invoke(std::forward<Args>(args)...);
         }
