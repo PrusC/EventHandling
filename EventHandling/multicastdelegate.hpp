@@ -38,7 +38,7 @@ namespace events {
       MulticastDelegate(const MulticastDelegate& other) = delete;
       MulticastDelegate(MulticastDelegate&& other) = delete;
 
-      Ret invoke(Args... args) override {
+      Ret invoke(Args&&... args) override {
         if (core.handlers.empty()) {
           throw DelegateException("Multicast Delegate list is empty");
         }

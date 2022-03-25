@@ -29,9 +29,9 @@ namespace events {
   public:
     Event(): m_Handlers() {}
 
-    void operator() (Args...args) {
+    void operator() (Args&&...args) {
       if (!bool(m_Handlers)) {
-        m_Handlers(args...);
+        m_Handlers(std::forward<Args>(args)...);
       }
     }
 
