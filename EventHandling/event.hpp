@@ -44,6 +44,10 @@ namespace events {
       m_Handlers -= handler;
     }
 
+    void reset() {
+      m_Handlers.reset();
+    }
+
   private:
     delegates::MulticastDelegate<void, Args...> m_Handlers;
 

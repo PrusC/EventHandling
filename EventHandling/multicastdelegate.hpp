@@ -57,6 +57,11 @@ namespace events {
         return core.handlers.empty();
       }
 
+      void reset() override {
+        std::lock_guard<std::mutex> g(core.coreMutex);
+        core.handlers.clear();
+      }
+
       void operator +=(const Delegate<Ret, Args...>& delegate) {
         std::lock_guard<std::mutex> g(core.coreMutex);
         core.handlers.push_back(std::make_shared<Delegate<Ret, Args...>>(delegate));

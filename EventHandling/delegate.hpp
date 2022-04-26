@@ -25,6 +25,7 @@ namespace events {
       virtual ~IDelegate() {}
       virtual Ret invoke(Args&&... args) = 0;
       virtual explicit operator bool() const = 0;
+      virtual void reset() = 0;
 
       Ret operator()(Args&&... args) {
         return invoke(std::forward<Args>(args)...);
@@ -70,6 +71,10 @@ namespace events {
 
       explicit operator bool() const override {
         return bool(m_Holder);
+      }
+
+      void reset() override {
+        m_Holder.reset();
       }
 
     protected:
