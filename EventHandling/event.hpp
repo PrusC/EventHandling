@@ -28,11 +28,16 @@ namespace events {
 
   public:
     Event(): m_Handlers() {}
+    Event(const EventHandler<Args...>& handler): m_Handlers(handler);
 
     void operator() (Args&&...args) {
       if (!bool(m_Handlers)) {
         m_Handlers(std::forward<Args>(args)...);
       }
+    }
+
+    explicit operator bool() const {
+      return bool(m_Handler);
     }
 
   protected:

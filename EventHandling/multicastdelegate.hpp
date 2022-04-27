@@ -37,6 +37,10 @@ namespace events {
       MulticastDelegate(): core() {}
       MulticastDelegate(const MulticastDelegate& other) = delete;
       MulticastDelegate(MulticastDelegate&& other) = delete;
+      MulticastDelegate(const Delegate<Ret, Args...>&& delegate): MulticastDelegate() {
+        std::lock_guard g(core.coreMutex);
+        core.handlers += delegate;
+      }
 
       Ret invoke(Args&&... args) override {
         if (core.handlers.empty()) {
