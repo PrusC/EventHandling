@@ -11,43 +11,6 @@ namespace eh {
 
 namespace utils {
 
-// template <typename Ret, typename... Args>
-// class InvocableBase {
-//  public:
-//   ~InvocableBase() {}
-//
-//   bool operator==(const InvocableBase& other) const { return equals(other); }
-//
-//   bool operator!=(const InvocableBase& other) const { return !(*this ==
-//   other); }
-//
-//   Ret operator()(Args&&... args) { return
-//   invoke(std::forward<Args>(args)...); } Ret invoke(Args&&... args){
-//       return m_vtable.invoke(this, std::forward<Args>(args)...)};
-//
-//  protected:
-//   struct Vtable {
-//     using Invoke = Ret (*)(InvocableBase*, Args...);
-//     using Destroy = void (*)(InvocableBase*);
-//     using Compare = bool (*)(const InvocableBase* c1, const InvocableBase*
-//     c2);
-//
-//     Invoke invoke;
-//     Destroy destroy;
-//     Compare compare;
-//   };
-//
-//   const Vtable m_vtable;
-//
-//   bool equals(const InvocableBase<Ret, Args...>& other) const {
-//     return m_vtable.compare(this, *other);
-//   };
-//
-//   explicit InvocableBase(const Vtable table) : m_vtable(table) {}
-// };
-//
-// template<typename Func, typename
-
 template <typename Ret, typename... Args>
 class InvocationElementFactory;
 
