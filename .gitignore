@@ -388,4 +388,5 @@ FodyWeavers.xsd
 *.sln.iml
 
 out/
+removed/
 CMakeSettings.json
