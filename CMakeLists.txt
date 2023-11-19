@@ -10,12 +10,6 @@ set(EH_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/EventHandling)
 set(EH_HEADERS_DIR EventHandling)
 
 set (HEADER_FILES
-  #${EH_INCLUDE_DIR}/delegate.hpp
-  #${EH_INCLUDE_DIR}/multicastdelegate.hpp
-  #${EH_INCLUDE_DIR}/eventhandler.hpp
-  #${EH_INCLUDE_DIR}/event.hpp
-  #${EH_INCLUDE_DIR}/delegate.hpp
-  #${EH_INCLUDE_DIR}/publisher.hpp
   ${EH_HEADERS_DIR}/utils/ptr.hpp
   ${EH_HEADERS_DIR}/utils/invocable_element.hpp
   ${EH_HEADERS_DIR}/utils/helper.hpp
@@ -24,15 +18,13 @@ set (HEADER_FILES
   ${EH_HEADERS_DIR}/utils/wrapped_call.hpp
   ${EH_HEADERS_DIR}/utils/callback_queue_base.hpp
   ${EH_HEADERS_DIR}/utils/callback_queue.hpp
-  ${EH_HEADERS_DIR}/invoke_type.h
+  ${EH_HEADERS_DIR}/delegate_invoke_type.h
   ${EH_HEADERS_DIR}/delegate_base.h
   ${EH_HEADERS_DIR}/delegate.hpp
   ${EH_HEADERS_DIR}/delegate_internal_executor.hpp
   ${EH_HEADERS_DIR}/delegate_executor.hpp
   ${EH_HEADERS_DIR}/event_handler.hpp
   ${EH_HEADERS_DIR}/multicast_delegate.hpp
-  ${EH_HEADERS_DIR}/delegate_parameters.hpp
-
   ${EH_HEADERS_DIR}/thread.hpp
   ${EH_HEADERS_DIR}/task.hpp
   ${EH_HEADERS_DIR}/event_system.h

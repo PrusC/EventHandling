@@ -7,7 +7,7 @@
 #include "thread.hpp"
 #include "utils/invocable_element.hpp"
 #include "utils/wrapped_call.hpp"
-#include "invoke_type.h"
+#include "delegate_invoke_type.h"
 
 namespace eh {
 

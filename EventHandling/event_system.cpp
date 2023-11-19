@@ -1,16 +1,26 @@
 #include "event_system.h"
 
 #include <algorithm>
+
+#ifndef __GNUC__
 #include <atomic>
+#endif  // !__GNUC__
+
 
 namespace eh {
 
-std::atomic<std::shared_ptr<Thread>> main_thread;
+ #ifdef __GNUC__
+std::mutex main_mutex;
+std::shared_ptr<Thread> main_thread
+#else
+std::atomic<std::shared_ptr<Thread>>
+#endif  // __GNUC__
+main_thread;
+
 std::unique_ptr<EventSystem> instance;
 
 
 EventSystem& EventSystem::Instance() {
-  //static std::unique_ptr<EventSystem> instance;
   if (instance == nullptr) {
     //instance = std::make_unique<EventSystem>();
     throw EventSystemError(
@@ -20,24 +30,55 @@ EventSystem& EventSystem::Instance() {
 }
 
 ThreadPtr EventSystem::MainThread() {
-  if (main_thread.load() == nullptr) {
-    //main_thread.store(Thread::Create());
-    //Instance().RegisterThread(main_thread.load());
+#ifdef __GNUC__
+  std::lock_guard<std::mutex> g(main_mutex);
+  if (main_thread == nullptr) {
+    // main_thread.store(Thread::Create());
+    // Instance().RegisterThread(main_thread.load());
     throw EventSystemError(
         "Event system was not inialized. Call EventSystem::Init befor");
   }
-  return main_thread.load(); 
+  return main_thread;
+#else
+  if (main_thread.load() == nullptr) {
+    // main_thread.store(Thread::Create());
+    // Instance().RegisterThread(main_thread.load());
+    throw EventSystemError(
+        "Event system was not inialized. Call EventSystem::Init befor");
+  }
+  return main_thread.load();
+#endif  // __GNUC__
 }
 
 void EventSystem::Init() {
+#ifdef __GNUC__
+  std::lock_guard<std::mutex> g(main_mutex);
+  main_thread = Thread::Create();
+#else
   main_thread.store(Thread::Create());
   main_thread.load()->Start();
+#endif  // __GNUC__
+
   instance = std::make_unique<EventSystem>();
+
+#ifdef __GNUC__
+  instance->RegisterThread(main_thread);
+#else
   instance->RegisterThread(main_thread.load());
+#endif  // __GNUC__
+
 }
 
-void EventSystem::Release() { 
+void EventSystem::Release() {
+#ifdef __GNUC__ 
+  {
+    std::lock_guard<std::mutex> g(main_mutex);
+    main_thread->Stop();
+  }
+#else
   main_thread.load()->Stop();
+#endif  // __GNUC__
+
   instance.release();
 }
 

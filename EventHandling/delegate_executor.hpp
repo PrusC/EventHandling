@@ -6,7 +6,7 @@
 
 #include "delegate.hpp"
 #include "delegate_internal_executor.hpp"
-#include "invoke_type.h"
+#include "delegate_invoke_type.h"
 #include "thread.hpp"
 
 namespace eh {

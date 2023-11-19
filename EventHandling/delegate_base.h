@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stdexcept>
-#include "invoke_type.h"
+#include "delegate_invoke_type.h"
 
 namespace eh {
 
