@@ -7,9 +7,9 @@
 #include <type_traits>
 
 #include "delegate_base.h"
-#include "utils\invocable_element.hpp"
-#include "utils\ptr.hpp"
-#include "utils\wrapped_call.hpp"
+#include "utils/invocable_element.hpp"
+#include "utils/ptr.hpp"
+#include "utils/wrapped_call.hpp"
 
 namespace eh {
 

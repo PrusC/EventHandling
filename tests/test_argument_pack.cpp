@@ -1,7 +1,7 @@
-#include <gtest\gtest.h>
+#include <gtest/gtest.h>
 
-#include <EventHandling\utils\argument_pack.hpp>
-#include <EventHandling\utils\invocable_element.hpp>
+#include <EventHandling/utils/argument_pack.hpp>
+#include <EventHandling/utils/invocable_element.hpp>
 
 #include "util_functions.h"
 

@@ -1,9 +1,9 @@
-#include <gtest\gtest.h>
+#include <gtest/gtest.h>
 
-#include <EventHandling\delegate_executor.hpp>
-#include <EventHandling\delegate.hpp>
-#include <EventHandling\thread.hpp>
-#include <EventHandling\event_system.h>
+#include <EventHandling/delegate_executor.hpp>
+#include <EventHandling/delegate.hpp>
+#include <EventHandling/thread.hpp>
+#include <EventHandling/event_system.h>
 
 #include "util_functions.h"
 

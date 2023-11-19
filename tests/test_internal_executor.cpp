@@ -1,9 +1,9 @@
-#include <gtest\gtest.h>
+#include <gtest/gtest.h>
 
-#include <EventHandling\utils\wrapped_call.hpp>
-#include <EventHandling\delegate_internal_executor.hpp>
-#include <EventHandling\utils\callback_queue.hpp>
-#include <EventHandling\thread.hpp>
+#include <EventHandling/utils/wrapped_call.hpp>
+#include <EventHandling/delegate_internal_executor.hpp>
+#include <EventHandling/utils/callback_queue.hpp>
+#include <EventHandling/thread.hpp>
 
 #include "util_functions.h"
 

@@ -5,8 +5,8 @@
 #include <thread>
 
 #include "delegate.hpp"
-#include "utils\callback_queue_base.hpp"
-#include "utils\wrapped_call.hpp"
+#include "utils/callback_queue_base.hpp"
+#include "utils/wrapped_call.hpp"
 
 namespace eh {
 

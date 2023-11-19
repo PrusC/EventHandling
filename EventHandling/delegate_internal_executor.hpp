@@ -5,8 +5,8 @@
 #include <thread>
 
 #include "thread.hpp"
-#include "utils\invocable_element.hpp"
-#include "utils\wrapped_call.hpp"
+#include "utils/invocable_element.hpp"
+#include "utils/wrapped_call.hpp"
 #include "invoke_type.h"
 
 namespace eh {

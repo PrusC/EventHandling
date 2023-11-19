@@ -1,7 +1,7 @@
-#include <gtest\gtest.h>
+#include <gtest/gtest.h>
 
-#include <EventHandling\delegate.hpp>
-#include <EventHandling\multicast_delegate.hpp>
+#include <EventHandling/delegate.hpp>
+#include <EventHandling/multicast_delegate.hpp>
 
 #include "util_functions.h"
 

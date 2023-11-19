@@ -1,7 +1,7 @@
-#include <gtest\gtest.h>
+#include <gtest/gtest.h>
 
-#include <EventHandling\event.hpp>
-#include <EventHandling\event_handler.hpp>
+#include <EventHandling/event.hpp>
+#include <EventHandling/event_handler.hpp>
 
 #include "util_functions.h"
 
