@@ -41,7 +41,7 @@ foreach (file ${TEST_FILES})
       EventHandling 
   )
 
-  gtest_discover_tests(${file})
+  gtest_discover_tests(${file} WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX})
 
   install(TARGETS ${file} DESTINATION ${CMAKE_INSTALL_PREFIX})
 
