@@ -13,9 +13,8 @@ namespace eh {
 std::mutex main_mutex;
 std::shared_ptr<Thread> main_thread
 #else
-std::atomic<std::shared_ptr<Thread>>
+std::atomic<std::shared_ptr<Thread>> main_thread;
 #endif  // __GNUC__
-main_thread;
 
 std::unique_ptr<EventSystem> instance;
 
