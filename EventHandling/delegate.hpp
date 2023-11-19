@@ -1,118 +1,134 @@
 #pragma once
 
-#include <memory>
 #include <exception>
+#include <functional>
+#include <memory>
+#include <stdexcept>
+#include <type_traits>
 
-#include "utils/holder.hpp"
+#include "delegate_base.h"
+#include "utils\invocable_element.hpp"
+#include "utils\ptr.hpp"
+#include "utils\wrapped_call.hpp"
 
-namespace events {
+namespace eh {
 
-  namespace delegates {
-
-    class DelegateException: public std::exception {
-    public:
-      //explicit DelegateException(): std::exception(), msg("") {}
-      explicit DelegateException(char const* message): msg(message) {}
-      const char* what() const noexcept override { return msg; }
-    private:
-      const char* msg;
-    };
-
-    template<typename Ret, typename ...Args>
-    class IDelegate {
-
-    public:
-      virtual ~IDelegate() {}
-      virtual Ret invoke(Args&&... args) = 0;
-      virtual explicit operator bool() const = 0;
-      virtual void reset() = 0;
-
-      Ret operator()(Args&&... args) {
-        return invoke(std::forward<Args>(args)...);
-      }
-
-      bool operator==(const IDelegate& other) const {
-        return equals(other);
-      }
-
-      bool operator!=(const IDelegate& other) const {
-        return !(*this == other);
-      }
-
-    protected:
-      virtual bool equals(const IDelegate<Ret, Args...>& other) const = 0;
-
-    };
-
-    template<typename Ret, typename ...Args>
-    class Delegate: public IDelegate<Ret, Args...> {
-
-    public:
-
-      Delegate(): m_Holder(nullptr) {}
-
-      Delegate(const Delegate& other): m_Holder(other.m_Holder) {}
-
-      Delegate(Delegate&& other): m_Holder(std::move(other.m_Holder)) {}
-
-      template <typename Object, typename Method>
-      Delegate(Object* object, Method method) :
-        m_Holder(holders::Factory<Ret, Args...>::create(object, method)) {}
-
-      Delegate(ptr::FunctionPtr<Ret, Args...> function):
-        m_Holder(holders::Factory<Ret, Args...>::create(function)) {}
-
-      Ret invoke(Args&&...args) override {
-        if (m_Holder) {
-          return m_Holder->invoke(std::forward<Args>(args)...);
-        }
-        throw DelegateException("Delegate holds nothing");
-      }
-
-      explicit operator bool() const override {
-        return bool(m_Holder);
-      }
-
-      void reset() override {
-        m_Holder.reset();
-      }
-
-    protected:
-      bool equals(const IDelegate<Ret, Args...>& other) const override {
-        const Delegate<Ret, Args...>* _other = dynamic_cast<const Delegate<Ret, Args...>*>(&other);
-        return _other && m_Holder && *m_Holder.get() == *(_other->m_Holder).get();
-      }
-
-      std::shared_ptr<holders::Holder<Ret, Args...>> m_Holder;
-    };
+namespace delegates {
 
 
-    template<typename Obj, typename Ret, typename ...Args>
-    Delegate<Ret, Args...> delegate(Obj* obj, ptr::MethodPtr<Obj, Ret, Args...> method) {
-      return Delegate<Ret, Args...>(obj, method);
+template <typename Ret, typename... Args>
+class DelegateExecutor;
+
+template <typename Ret, typename... Args>
+class Delegate : public IDelegate<Ret, Args...> {
+  using Type = Delegate<Ret, Args...>;
+
+ public:
+  Delegate()
+      : m_invocable(nullptr),
+        m_invoke_type(InvokeType::Auto),
+        m_thread_id(std::this_thread::get_id()) {}
+  Delegate(const Delegate& other)
+      : m_invocable(other.m_invocable),
+        m_invoke_type(other.m_invoke_type),
+        m_thread_id(other.m_thread_id) {}
+  Delegate(Delegate&& other)
+      : m_invocable(std::move(other.m_invocable)),
+        m_invoke_type(other.m_invoke_type),
+        m_thread_id(other.m_thread_id) {}
+
+  bool IsEmpty() const override { return m_invocable == nullptr; }
+  void Reset() override { m_invocable.reset(); }
+
+  void SetInvokeType(InvokeType type) override { m_invoke_type = type; }
+  void SetThreadId(std::thread::id id) override { m_thread_id = id; }
+
+  Ret Invoke(Args&&... args) {
+    if (IsEmpty()) {
+      throw DelegateException("Callable object is empty");
     }
-
-    template<typename Obj, typename Ret, typename ...Args>
-    Delegate<Ret, Args...> delegate(Obj* obj, ptr::ConstMethodPtr<Obj, Ret, Args...> method) {
-      return Delegate<Obj, Ret, Args...>(obj, method);
-    }
-
-    template<typename Ret, typename ...Args>
-    Delegate<Ret, Args...> delegate(ptr::FunctionPtr<Ret, Args...> function) {
-      return Delegate<Ret, Args...>(function);
-    }
-
-    template<typename Obj, typename Ret, typename ...Args>
-    std::shared_ptr<Delegate<Ret, Args...>> delegate_ptr(Obj* obj, ptr::MethodPtr<Obj, Ret, Args...> method) {
-      return std::make_shared<Delegate<Ret, Args...>>(obj, method);
-    }
-
-    template<typename Ret, typename ...Args>
-    std::shared_ptr<Delegate<Ret, Args...>> delegate_ptr(ptr::FunctionPtr<Ret, Args...> function) {
-      return std::make_shared<Delegate<Ret, Args...>>(function);
-    }
-
+    return m_invocable->invoke(std::forward<Args>(args)...);
   }
+
+  bool IsPartner(const Delegate& other) const {
+    if (IsEmpty() || other.IsEmpty()) {
+      return false;
+    }
+    return m_invocable == other.m_invocable;
+  }
+
+  template <typename Ret0, typename... Args0>
+  friend Delegate<Ret0, Args0...> delegate(
+      ptr::FunctionPtr<Ret0, Args0...> func);
+
+  template <typename Ret0, typename... Args0, typename Obj, typename Method,
+            typename>
+  friend Delegate<Ret0, Args0...> delegate(Obj* object, Method method);
+
+  template <typename Ret0, typename... Args0, typename Callable, typename>
+  friend Delegate<Ret0, Args0...> delegate(Callable&& callable);
+
+  template <typename Ret0, typename... Args0>
+  friend utils::WrappedCallBasePtr WrappDelegateInvoke(
+      const Delegate<Ret0, Args0...>& d, Args0&&... args);
+
+  friend class DelegateExecutor<Ret, Args...>;
+
+  //friend class DelegateExecutor<Ret, Args...>;
+
+ private:
+  explicit Delegate(const utils::InvocableBasePtr<Ret, Args...>& invocable)
+      : m_invocable(invocable),
+        m_invoke_type(InvokeType::Auto),
+        m_thread_id(std::this_thread::get_id()) {}
+
+  utils::InvocableBasePtr<Ret, Args...> m_invocable;
+  InvokeType m_invoke_type{InvokeType::Auto};
+  std::thread::id m_thread_id;
+
+ protected:
+  bool Equals(const IDelegate<Ret, Args...>& other) const {
+    const Type* other_casted = dynamic_cast<const Type*>(&other);
+    if (other_casted == nullptr) {
+      return false;
+    }
+    if (IsPartner(*other_casted)) {
+      return true;
+    }
+    return *m_invocable == *(other_casted->m_invocable);
+  }
+};
+
+template <typename Ret, typename... Args>
+Delegate<Ret, Args...> delegate(ptr::FunctionPtr<Ret, Args...> func) {
+  return Delegate<Ret, Args...>(
+      utils::InvocationElementFactory<Ret, Args...>::create(func));
 }
 
+template <typename Ret, typename... Args, typename Obj, typename Method,
+          typename = std::enable_if_t<
+              std::is_invocable_r_v<Ret, Method, Obj, Args...>>>
+Delegate<Ret, Args...> delegate(Obj* object, Method method) {
+  return Delegate<Ret, Args...>(
+      utils::InvocationElementFactory<Ret, Args...>::create(object, method));
+}
 
+template <
+    typename Ret, typename... Args, typename Callable,
+    typename = std::enable_if_t<std::is_invocable_r_v<Ret, Callable, Args...>>>
+Delegate<Ret, Args...> delegate(Callable&& callable) {
+  return Delegate<Ret, Args...>(
+      utils::InvocationElementFactory<Ret, Args...>::create(
+          std::forward<Callable>(callable)));
+}
+
+template <typename Ret, typename... Args>
+utils::WrappedCallBasePtr WrappDelegateInvoke(const Delegate<Ret, Args...>& d,
+                                              Args&&... args) {
+  return std::make_shared<utils::WrappedCallImpl<Ret, Args...>>(
+      d.m_invocable, std::forward<Args>(args)...);
+}
+
+}  // namespace delegates
+
+}  // namespace eh
