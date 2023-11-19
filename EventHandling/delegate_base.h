@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 #include "delegate_invoke_type.h"
+#include <thread>
 
 namespace eh {
 
