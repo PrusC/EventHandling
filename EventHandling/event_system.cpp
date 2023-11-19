@@ -1,6 +1,7 @@
 #include "event_system.h"
 
 #include <algorithm>
+#include <memory>
 
 #ifndef __GNUC__
 #include <atomic>
@@ -9,9 +10,9 @@
 
 namespace eh {
 
- #ifdef __GNUC__
+#ifdef __GNUC__
 std::mutex main_mutex;
-std::shared_ptr<Thread> main_thread
+std::shared_ptr<Thread> main_thread;
 #else
 std::atomic<std::shared_ptr<Thread>> main_thread;
 #endif  // __GNUC__
