@@ -50,10 +50,10 @@ endif()
 
 if(BUILD_UNIT_TESTS)
   find_package(GTest REQUIRED)
+  enable_testing()
 
   add_subdirectory(tests)
 
-  enable_testing()
   include(GoogleTest)
 endif()
 
