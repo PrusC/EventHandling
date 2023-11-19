@@ -28,8 +28,8 @@ class ArgumentPack {
   ArgumentPack(const ArgumentPack& pack) : m_args(pack.m_args) {}
   ArgumentPack(ArgumentPack&& pack) = delete;
 
-  const ArgsTuple& Args() const { return m_args; }
-  ArgsTuple& Args() { return m_args; }
+  const ArgsTuple& Arguments() const { return m_args; }
+  ArgsTuple& Arguments() { return m_args; }
 
   template <typename Callable>
   decltype(auto) Apply(Callable&& c) {
