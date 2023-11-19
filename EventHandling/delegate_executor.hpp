@@ -16,8 +16,8 @@ namespace delegates {
 template <typename Ret, typename... Args>
 class DelegateExecutor {
  private:
-  using DefaultInternalExecutor = DefaultInternalExecutor<Ret, Args...>;
-  using QueuedInternalExecutor = QueuedInternalExecutor<Ret, Args...>;
+  using DefaultExecutor = DefaultInternalExecutor<Ret, Args...>;
+  using QueuedExecutor = QueuedInternalExecutor<Ret, Args...>;
 
  public:
   using ExecutedType = Delegate<Ret, Args...>;
@@ -56,8 +56,7 @@ class DelegateExecutor {
     }
     if (m_use_event_system) {
       if (auto th = Thread::FindRegistered(thread_id); th.has_value()) {
-        m_executors[thread_id] =
-            QueuedInternalExecutor(th.value()->CallbackQueue());
+        m_executors[thread_id] = QueuedExecutor(th.value()->CallbackQueue());
         return m_executors[thread_id].Execute(
             d.m_invocable, std::forward<Args>(args)..., invoke_type);
       }
@@ -68,8 +67,8 @@ class DelegateExecutor {
 
  private:
   bool m_use_event_system;
-  DefaultInternalExecutor m_default_executor;
-  std::unordered_map<std::thread::id, QueuedInternalExecutor> m_executors;
+  DefaultExecutor m_default_executor;
+  std::unordered_map<std::thread::id, QueuedExecutor> m_executors;
 };
 
 }  // namespace delegates
