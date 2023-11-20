@@ -54,6 +54,7 @@ void EventSystem::Init() {
 #ifdef __GNUC__
   std::lock_guard<std::mutex> g(main_mutex);
   main_thread = Thread::Create();
+  main_thread->Start();
 #else
   main_thread.store(Thread::Create());
   main_thread.load()->Start();
