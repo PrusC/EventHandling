@@ -1,62 +1,73 @@
 #pragma once
 
-#include "eventhandler.hpp"
-#include "multicastdelegate.hpp"
+#include "event_handler.hpp"
+
+namespace eh {
 
 namespace events {
 
-  template<typename ...Args>
-  class IEvent {
+enum class TriggerType { Synchronous, Asynchronous };
 
-  public:
-    void operator+= (const EventHandler<Args...>& handler) {
-      addHandler(handler);
+template <typename... Args>
+class IEvent {
+ public:
+  virtual ~IEvent() {}
+
+  virtual bool HasHandlers() const = 0;
+  virtual void AddHandler(const EventHandler<Args...>& handler) = 0;
+  virtual void RemoveHandler(const EventHandler<Args...>& handler) = 0;
+  virtual void SyncTrigger(Args&&... args) = 0;
+  virtual void AsyncTrigger(Args&&... args) = 0;
+  virtual TriggerType GetTriggerType() const = 0;
+  virtual void SetTriggerType(TriggerType trigger_type) = 0;
+
+  void Trigger(Args&&... args) const {
+    switch (TriggerType()) {
+      case TriggerType::Synchronous:
+        return SyncTrigger(std::forward<Args>(args)...);
+      case TriggerType::Asynchronous:
+        return AsyncTrigger(std::forward<Args>(args)...);
+      default:
+        return SyncTrigger(std::forward<Args>(args)...);
     }
+  }
 
-    void operator-= (const EventHandler<Args...>& handler) {
-      removeHandler(handler);
-    }
+ protected:
+};
 
-  protected:
-    virtual void addHandler(const EventHandler<Args...>& handler) = 0;
-    virtual void removeHandler(const EventHandler<Args...>& handler) = 0;
+template <typename... Args>
+class Event : public IEvent<Args...> {
+ public:
+  Event() : m_trigger_type(TriggerType::Synchronous), m_handlers() {}
 
-  };
+  bool HasHandlers() const override { return !m_handlers.IsEmpty(); }
 
-  template<typename ...Args>
-  class Event: public IEvent<Args...> {
+  void AddHandler(const EventHandler<Args...>& handler) override {
+    m_handlers += handler;
+  }
+  void RemoveHandler(const EventHandler<Args...>& handler) override {
+    m_handlers -= handler;
+  }
 
-  public:
-    Event(): m_Handlers() {}
-    Event(const EventHandler<Args...>& handler): m_Handlers(handler);
+  void SyncTrigger(Args&&... args) override {
+    m_handlers.SetUseExecutor(false);
+    m_handlers.Invoke(std::forward<Args>(args)...);
+  }
+  void AsyncTrigger(Args&&... args) override {
+    m_handlers.SetUseExecutor(true);
+    m_handlers.Invoke(std::forward<Args>(args)...);
+  }
 
-    void operator() (Args&&...args) {
-      if (!bool(m_Handlers)) {
-        m_Handlers(std::forward<Args>(args)...);
-      }
-    }
+  TriggerType GetTriggerType() const override { return m_trigger_type; }
+  void SetTriggerType(TriggerType trigger_type) override {
+    m_trigger_type = trigger_type;
+  }
 
-    explicit operator bool() const {
-      return bool(m_Handler);
-    }
+ private:
+  std::atomic<TriggerType> m_trigger_type;
+  EventHandlersStorage<Args...> m_handlers;
+};
 
-  protected:
-    void addHandler(const EventHandler<Args...>& handler) override {
-      m_Handlers += handler;
-    }
+}  // namespace events
 
-    void removeHandler(const EventHandler<Args...>& handler) override {
-      m_Handlers -= handler;
-    }
-
-    void reset() {
-      m_Handlers.reset();
-    }
-
-  private:
-    delegates::MulticastDelegate<void, Args...> m_Handlers;
-
-  };
-}
-
-
+}  // namespace eh
